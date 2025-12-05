@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Budget Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #0f1419;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            padding: 40px 25px 90px;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .balance-card {
+            background: rgba(15, 20, 25, 0.95);
+            margin: -60px 20px 20px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            color: white;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .balance-label {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8899aa;
+        }
+
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .balance-details {
+            display: flex;
+            justify-content: space-around;
+            font-size: 13px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .balance-details div {
+            text-align: center;
+            flex: 1;
+        }
+
+        .balance-details > div:first-child {
+            border-right: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .balance-details .label-text {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8899aa;
+        }
+
+        .balance-details .value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            color: #ffffff;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e2a3a 0%, #2a3f5f 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .stat-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #8899aa;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .section {
+            padding: 0 20px 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .transaction {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #1a2332;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .transaction:hover {
+            background: #1e2a3a;
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .transaction-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-right: 15px;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #ffffff;
+        }
+
+        .transaction-date {
+            font-size: 12px;
+            color: #8899aa;
+        }
+
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .expense {
+            color: #ff6b6b;
+        }
+
+        .income {
+            color: #00d4ff;
+        }
+
+        .form-group {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #1e2a3a;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border 0.3s ease;
+            background: #1a2332;
+            color: #ffffff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 15px;
+            border: 2px solid #1e2a3a;
+            border-radius: 12px;
+            background: #1a2332;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ffffff;
+        }
+
+        .category-btn:hover {
+            border-color: #00d4ff;
+            background: #1e2a3a;
+        }
+
+        .category-btn.active {
+            border-color: #00d4ff;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%);
+            color: white;
+        }
+
+        .category-btn .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .category-btn .label {
+            font-size: 11px;
+        }
+
+        .chart-container {
+            padding: 0 20px 20px;
+        }
+
+        .chart-placeholder {
+            background: #1a2332;
+            height: 320px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .pie-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-legend {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #ffffff;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-label {
+            font-weight: 600;
+            min-width: 80px;
+            color: #ffffff;
+        }
+
+        .legend-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .category-breakdown {
+            background: #1a2332;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .category-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .category-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+
+        .category-name {
+            flex: 1;
+            font-size: 14px;
+            color: #ffffff;
+        }
+
+        .category-amount {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #00d4ff;
+        }
+
+        .category-percentage {
+            font-size: 12px;
+            color: #8899aa;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #0f1419;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff 0%, #0099ff 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .subscription-card {
+            background: linear-gradient(135deg, #1e2a3a 0%, #2a3f5f 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subscription-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #00d4ff, #0099ff);
+        }
+
+        .subscription-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: rgba(0, 212, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .subscription-info {
+            flex: 1;
+        }
+
+        .subscription-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .subscription-details {
+            font-size: 12px;
+            color: #8899aa;
+        }
+
+        .subscription-amount {
+            font-weight: bold;
+            font-size: 18px;
+            color: #00d4ff;
+        }
+
+        .subscription-status {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .subscription-status.due {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .total-subscriptions {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            text-align: center;
+        }
+
+        .total-subscriptions .label {
+            font-size: 12px;
+            color: #8899aa;
+            margin-bottom: 5px;
+        }
+
+        .total-subscriptions .amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .goal-card {
+            background: linear-gradient(135deg, #1e2a3a 0%, #2a3f5f 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .goal-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .goal-amount {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .goal-progress {
+            font-size: 13px;
+            color: #8899aa;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            width: calc(100% - 40px);
+            margin: 0 20px 20px;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            cursor: pointer;
+            font-size: 1.4rem;
+            border-radius: 16px;
+            border: none;
+            padding: 2px;
+            background: radial-gradient(circle 80px at 80% -10%, #ffffff, #181b1b);
+            position: relative;
+        }
+
+        .btn-primary::after {
+            content: "";
+            position: absolute;
+            width: 65%;
+            height: 60%;
+            border-radius: 120px;
+            top: 0;
+            right: 0;
+            box-shadow: 0 0 20px #ffffff38;
+            z-index: -1;
+        }
+
+        .blob1 {
+            position: absolute;
+            width: 70px;
+            height: 100%;
+            border-radius: 16px;
+            bottom: 0;
+            left: 0;
+            background: radial-gradient(
+                circle 60px at 0% 100%,
+                #3fe9ff,
+                #0000ff80,
+                transparent
+            );
+            box-shadow: -10px 10px 30px #0051ff2d;
+        }
+
+        .inner {
+            padding: 14px 25px;
+            border-radius: 14px;
+            color: #fff;
+            z-index: 3;
+            position: relative;
+            background: radial-gradient(circle 80px at 80% -50%, #777777, #0f1111);
+        }
+
+        .inner::before {
+            content: "";
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            border-radius: 14px;
+            background: radial-gradient(
+                circle 60px at 0% 100%,
+                #00e1ff1a,
+                #0000ff11,
+                transparent
+            );
+            position: absolute;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 20px;
+            background: #0f1419;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            color: #8899aa;
+            border: none;
+            background: radial-gradient(circle 80px at 80% -10%, #ffffff11, #181b1b);
+            position: relative;
+            min-width: 70px;
+        }
+
+        .nav-item::after {
+            content: "";
+            position: absolute;
+            width: 65%;
+            height: 60%;
+            border-radius: 120px;
+            top: 0;
+            right: 0;
+            box-shadow: 0 0 20px #ffffff18;
+            z-index: -1;
+        }
+
+        .nav-item:hover {
+            background: radial-gradient(circle 80px at 80% -10%, #ffffff22, #1a2332);
+        }
+
+        .nav-item.active {
+            color: #00d4ff;
+            background: radial-gradient(circle 80px at 80% -10%, #ffffff, #181b1b);
+        }
+
+        .nav-item.active::before {
+            content: "";
+            position: absolute;
+            width: 50px;
+            height: 100%;
+            border-radius: 16px;
+            bottom: 0;
+            left: 0;
+            background: radial-gradient(
+                circle 40px at 0% 100%,
+                #3fe9ff,
+                #0000ff80,
+                transparent
+            );
+            box-shadow: -10px 10px 30px #0051ff2d;
+            z-index: -1;
+        }
+
+        .nav-item .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .nav-item .label {
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Screen 1: Home Dashboard -->
+        <div class="screen active" id="home">
+            <div class="header">
+                <h1>Hi, Student! 👋</h1>
+                <p>Track your expenses wisely</p>
+            </div>
+
+            <div class="balance-card">
+                <div class="balance-label">Current Balance</div>
+                <div class="balance-amount">₹12,450</div>
+                <div class="balance-details">
+                    <div>
+                        <div class="label-text">Income</div>
+                        <div class="value">₹20,000</div>
+                    </div>
+                    <div>
+                        <div class="label-text">Expenses</div>
+                        <div class="value">₹7,550</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="icon">📈</div>
+                    <div class="label">Investment</div>
+                    <div class="value">₹5,000</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🍕</div>
+                    <div class="label">Food</div>
+                    <div class="value">₹320</div>
+                </div>
+            </div>
+
+            <div class="section" id="transactions-section">
+                <div class="section-title">Recent Transactions</div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Add Expense -->
+        <div class="screen" id="add-expense">
+            <div class="header">
+                <h1>Add Expense 💸</h1>
+                <p>Track your spending</p>
+            </div>
+
+            <div style="padding-top: 30px;">
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="expense-amount" placeholder="₹0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="expense-description" placeholder="What did you spend on?">
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                </div>
+
+                <div class="category-grid" id="expense-categories">
+                    <div class="category-btn" data-category="Food">
+                        <div class="icon">🍕</div>
+                        <div class="label">Food</div>
+                    </div>
+                    <div class="category-btn" data-category="Education">
+                        <div class="icon">📚</div>
+                        <div class="label">Education</div>
+                    </div>
+                    <div class="category-btn" data-category="Transport">
+                        <div class="icon">🚌</div>
+                        <div class="label">Transport</div>
+                    </div>
+                    <div class="category-btn" data-category="Entertainment">
+                        <div class="icon">🎬</div>
+                        <div class="label">Entertainment</div>
+                    </div>
+                    <div class="category-btn" data-category="Rent">
+                        <div class="icon">🏠</div>
+                        <div class="label">Rent</div>
+                    </div>
+                    <div class="category-btn" data-category="Health">
+                        <div class="icon">💊</div>
+                        <div class="label">Health</div>
+                    </div>
+                    <div class="category-btn" data-category="Shopping">
+                        <div class="icon">👕</div>
+                        <div class="label">Shopping</div>
+                    </div>
+                    <div class="category-btn" data-category="Other">
+                        <div class="icon">📱</div>
+                        <div class="label">Other</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="expense-date">
+                </div>
+
+                <button class="btn btn-primary" onclick="addExpense()">
+                    <div class="blob1"></div>
+                    <div class="inner">Add Expense</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Insights -->
+        <div class="screen" id="insights">
+            <div class="header">
+                <h1>Insights 📊</h1>
+                <p>Your spending patterns</p>
+            </div>
+
+            <div style="padding-top: 30px;" id="insights-content">
+            </div>
+        </div>
+
+        <!-- Screen 4: Subscriptions -->
+        <div class="screen" id="subscriptions">
+            <div class="header">
+                <h1>Subscriptions 📱</h1>
+                <p>Manage your recurring payments</p>
+            </div>
+
+            <div style="padding-top: 30px;">
+                <div class="section">
+                    <div class="total-subscriptions">
+                        <div class="label">Monthly Subscriptions</div>
+                        <div class="amount" id="total-subscriptions">₹2,197</div>
+                    </div>
+
+                    <div class="section-title">Active Subscriptions</div>
+                    
+                    <div id="subscriptions-container"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="showScreen('add-subscription')">
+                    <div class="blob1"></div>
+                    <div class="inner">Add Subscription</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 5: Add Subscription -->
+        <div class="screen" id="add-subscription">
+            <div class="header">
+                <h1>Add Subscription 📱</h1>
+                <p>Track recurring payments</p>
+            </div>
+
+            <div style="padding-top: 30px;">
+                <div class="form-group">
+                    <label>Subscription Name</label>
+                    <input type="text" id="sub-name" placeholder="e.g., Amazon Prime">
+                </div>
+
+                <div class="form-group">
+                    <label>Monthly Amount</label>
+                    <input type="number" id="sub-amount" placeholder="₹0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Emoji Icon</label>
+                    <input type="text" id="sub-icon" placeholder="📱" maxlength="2">
+                </div>
+
+                <div class="form-group">
+                    <label>Renewal Date</label>
+                    <input type="date" id="sub-date">
+                </div>
+
+                <div class="form-group">
+                    <label>Background Color</label>
+                    <select id="sub-color">
+                        <option value="rgba(229, 9, 20, 0.2)">Red</option>
+                        <option value="rgba(4, 164, 244, 0.2)">Blue</option>
+                        <option value="rgba(30, 215, 96, 0.2)">Green</option>
+                        <option value="rgba(255, 140, 0, 0.2)">Orange</option>
+                        <option value="rgba(156, 39, 176, 0.2)">Purple</option>
+                        <option value="rgba(0, 122, 255, 0.2)">Light Blue</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="addSubscription()">
+                    <div class="blob1"></div>
+                    <div class="inner">Add Subscription</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 6: Budget & Goals -->
+        <div class="screen" id="budget">
+            <div class="header">
+                <h1>Budget & Goals 🎯</h1>
+                <p>Stay on track with your finances</p>
+            </div>
+
+            <div style="padding-top: 30px;">
+                <div class="section">
+                    <div class="section-title">Monthly Budget</div>
+                    <div class="balance-card" style="margin: 0 0 20px;">
+                        <div class="balance-label">Budget Remaining</div>
+                        <div class="balance-amount" id="budget-remaining">₹9,230</div>
+                        <div class="balance-details">
+                            <div>
+                                <div class="label-text">Budget</div>
+                                <div class="value" id="budget-total">₹15,000</div>
+                            </div>
+                            <div>
+                                <div class="label-text">Spent</div>
+                                <div class="value" id="budget-spent">₹5,770</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-bar" style="margin: 0 0 20px;">
+                        <div class="progress-fill" id="budget-progress" style="width: 38%;"></div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Savings Goals</div>
+                    <div id="goals-container"></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="showScreen('add-goal')">
+                    <div class="blob1"></div>
+                    <div class="inner">Create New Goal</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 7: Add Goal -->
+        <div class="screen" id="add-goal">
+            <div class="header">
+                <h1>Create Goal 🎯</h1>
+                <p>Set your savings target</p>
+            </div>
+
+            <div style="padding-top: 30px;">
+                <div class="form-group">
+                    <label>Goal Name</label>
+                    <input type="text" id="goal-name" placeholder="e.g., New Laptop">
+                </div>
+
+                <div class="form-group">
+                    <label>Emoji Icon</label>
+                    <input type="text" id="goal-icon" placeholder="💻" maxlength="2">
+                </div>
+
+                <div class="form-group">
+                    <label>Target Amount</label>
+                    <input type="number" id="goal-target" placeholder="₹0.00">
+                </div>
+
+                <div class="form-group">
+                    <label>Current Savings</label>
+                    <input type="number" id="goal-current" placeholder="₹0.00" value="0">
+                </div>
+
+                <button class="btn btn-primary" onclick="addGoal()">
+                    <div class="blob1"></div>
+                    <div class="inner">Create Goal</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="nav-bar">
+            <div class="nav-item active" data-screen="home">
+                <div class="icon">🏠</div>
+                <div class="label">Home</div>
+            </div>
+            <div class="nav-item" data-screen="add-expense">
+                <div class="icon">➕</div>
+                <div class="label">Add</div>
+            </div>
+            <div class="nav-item" data-screen="subscriptions">
+                <div class="icon">📱</div>
+                <div class="label">Subscribe</div>
+            </div>
+            <div class="nav-item" data-screen="insights">
+                <div class="icon">📊</div>
+                <div class="label">Insights</div>
+            </div>
+            <div class="nav-item" data-screen="budget">
+                <div class="icon">🎯</div>
+                <div class="label">Goals</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let expenses = [
+            { id: 1, title: 'Course Books', category: 'Education', icon: '📚', amount: 450, date: new Date(), type: 'expense' },
+            { id: 2, title: 'Lunch with Friends', category: 'Food', icon: '🍕', amount: 320, date: new Date(Date.now() - 86400000), type: 'expense' },
+            { id: 3, title: 'Mutual Fund SIP', category: 'Investment', icon: '📈', amount: 5000, date: new Date('2025-12-01'), type: 'expense' },
+            { id: 4, title: 'Monthly Allowance', category: 'Income', icon: '💰', amount: 20000, date: new Date('2025-12-01'), type: 'income' }
+        ];
+
+        let subscriptions = [
+            { name: 'Netflix Premium', icon: '🎬', amount: 649, renewalDate: '2025-12-01', color: 'rgba(229, 9, 20, 0.2)' },
+            { name: 'Disney+ Hotstar', icon: '📺', amount: 299, renewalDate: '2025-11-15', color: 'rgba(4, 164, 244, 0.2)' },
+            { name: 'Spotify Premium', icon: '🎵', amount: 119, renewalDate: '2025-12-03', color: 'rgba(30, 215, 96, 0.2)' },
+            { name: 'Gym Membership', icon: '💪', amount: 800, renewalDate: '2025-12-01', color: 'rgba(255, 140, 0, 0.2)' },
+            { name: 'iCloud Storage', icon: '☁️', amount: 75, renewalDate: '2025-11-28', color: 'rgba(255, 152, 0, 0.2)' },
+            { name: 'Medium Membership', icon: '📖', amount: 255, renewalDate: '2025-12-05', color: 'rgba(0, 122, 255, 0.2)' }
+        ];
+
+        let goals = [
+            { name: 'New Laptop', icon: '💻', target: 50000, current: 8000 },
+            { name: 'Summer Trip', icon: '✈️', target: 25000, current: 12500 },
+            { name: 'AirPods', icon: '🎧', target: 20000, current: 18000 }
+        ];
+
+        let selectedCategory = '';
+        let totalIncome = 20000;
+        let monthlyBudget = 15000;
+
+        // Calculate totals
+        function calculateTotals() {
+            const totalExpenses = expenses
+                .filter(e => e.type === 'expense')
+                .reduce((sum, e) => sum + e.amount, 0);
+            const currentBalance = totalIncome - totalExpenses;
+            return { totalExpenses, currentBalance };
+        }
+
+        // Format date
+        function formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / 86400000);
+            
+            if (days === 0) return `Today, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+            if (days === 1) return `Yesterday, ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const { totalExpenses, currentBalance } = calculateTotals();
+            
+            // Update balance card
+            document.querySelector('#home .balance-amount').textContent = `₹${currentBalance.toLocaleString()}`;
+            const homeValues = document.querySelectorAll('#home .balance-details .value');
+            homeValues[0].textContent = `₹${totalIncome.toLocaleString()}`;
+            homeValues[1].textContent = `₹${totalExpenses.toLocaleString()}`;
+            
+            // Calculate category totals
+            const categoryTotals = {};
+            expenses.filter(e => e.type === 'expense').forEach(e => {
+                categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+            });
+            
+            // Update quick stats
+            const statCards = document.querySelectorAll('#home .quick-stats .stat-card');
+            const topCategories = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 2);
+            
+            topCategories.forEach((cat, idx) => {
+                if (statCards[idx]) {
+                    const icons = { 
+                        Education: '📚', Food: '🍕', Transport: '🚌', Entertainment: '🎬', 
+                        Rent: '🏠', Health: '💊', Shopping: '👕', Other: '📱', Investment: '📈'
+                    };
+                    statCards[idx].querySelector('.icon').textContent = icons[cat[0]] || '📱';
+                    statCards[idx].querySelector('.label').textContent = cat[0];
+                    statCards[idx].querySelector('.value').textContent = `₹${cat[1].toLocaleString()}`;
+                }
+            });
+            
+            updateTransactionsList();
+            updateInsights();
+            updateBudgetPage(totalExpenses);
+        }
+
+        // Update transactions list
+        function updateTransactionsList() {
+            const container = document.getElementById('transactions-section');
+            const transactionsHTML = expenses
+                .sort((a, b) => b.date - a.date)
+                .slice(0, 5)
+                .map(exp => {
+                    const bgColors = { 
+                        Education: '#ffe5e5', Food: '#e5f5ff', Transport: '#fff5e5',
+                        Entertainment: '#f5e5ff', Rent: '#e5ffe5', Health: '#ffe5f5',
+                        Shopping: '#fff0e5', Income: '#e5ffe5', Investment: '#e5f0ff', Other: '#f0f0f0'
+                    };
+                    const dateStr = formatDate(exp.date);
+                    const amountClass = exp.type === 'expense' ? 'expense' : 'income';
+                    const amountPrefix = exp.type === 'expense' ? '-' : '+';
+                    
+                    return `
+                        <div class="transaction">
+                            <div class="transaction-icon" style="background: ${bgColors[exp.category] || '#f0f0f0'};">${exp.icon}</div>
+                            <div class="transaction-info">
+                                <div class="transaction-title">${exp.title}</div>
+                                <div class="transaction-date">${dateStr}</div>
+                            </div>
+                            <div class="transaction-amount ${amountClass}">${amountPrefix}₹${exp.amount.toLocaleString()}</div>
+                        </div>
+                    `;
+                }).join('');
+            
+            container.innerHTML = `<div class="section-title">Recent Transactions</div>${transactionsHTML}`;
+        }
+
+        // Update insights page
+        function updateInsights() {
+            const categoryTotals = {};
+            const totalExpenses = expenses.filter(e => e.type === 'expense').reduce((sum, e) => {
+                categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+                return sum + e.amount;
+            }, 0);
+            
+            const colors = ['#4facfe', '#00d4ff', '#43e97b', '#feca57', '#ff6b6b', '#a29bfe', '#fd79a8', '#fdcb6e'];
+            
+            const sortedCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+            let currentAngle = 0;
+            let gradientStops = [];
+            let legendHTML = '';
+            
+            sortedCategories.forEach((cat, idx) => {
+                const percentage = (cat[1] / totalExpenses) * 100;
+                const angle = (percentage / 100) * 360;
+                const color = colors[idx % colors.length];
+                
+                gradientStops.push(`${color} ${currentAngle}deg ${currentAngle + angle}deg`);
+                currentAngle += angle;
+                
+                legendHTML += `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: ${color};"></div>
+                        <div class="legend-label">${cat[0]}</div>
+                        <div class="legend-value">${percentage.toFixed(0)}%</div>
+                    </div>
+                `;
+            });
+            
+            const insightsContent = `
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        <div class="pie-chart" style="background: conic-gradient(${gradientStops.join(', ')});"></div>
+                        <div class="chart-legend">
+                            ${legendHTML}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Spending by Category</div>
+                    ${sortedCategories.map((cat, idx) => {
+                        const percentage = ((cat[1] / totalExpenses) * 100).toFixed(0);
+                        return `
+                            <div class="category-breakdown">
+                                <div class="category-item">
+                                    <div class="category-color" style="background: ${colors[idx % colors.length]};"></div>
+                                    <div class="category-name">${cat[0]}</div>
+                                    <div class="category-amount">₹${cat[1].toLocaleString()}</div>
+                                    <div class="category-percentage">${percentage}%</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${percentage}%; background: ${colors[idx % colors.length]};"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Monthly Summary</div>
+                    <div class="quick-stats">
+                        <div class="stat-card">
+                            <div class="icon">💰</div>
+                            <div class="label">Avg Daily</div>
+                            <div class="value">₹${Math.round(totalExpenses / 30)}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="icon">📈</div>
+                            <div class="label">Total Spent</div>
+                            <div class="value">₹${totalExpenses.toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('insights-content').innerHTML = insightsContent;
+        }
+
+        // Update budget page
+        function updateBudgetPage(totalExpenses) {
+            const remaining = monthlyBudget - totalExpenses;
+            const percentUsed = ((totalExpenses / monthlyBudget) * 100).toFixed(0);
+            
+            document.getElementById('budget-remaining').textContent = `₹${remaining.toLocaleString()}`;
+            document.getElementById('budget-total').textContent = `₹${monthlyBudget.toLocaleString()}`;
+            document.getElementById('budget-spent').textContent = `₹${totalExpenses.toLocaleString()}`;
+            document.getElementById('budget-progress').style.width = `${Math.min(percentUsed, 100)}%`;
+        }
+
+        // Update subscriptions
+        function updateSubscriptions() {
+            const totalAmount = subscriptions.reduce((sum, sub) => sum + sub.amount, 0);
+            document.getElementById('total-subscriptions').textContent = `₹${totalAmount.toLocaleString()}`;
+
+            const container = document.getElementById('subscriptions-container');
+            container.innerHTML = subscriptions.map(sub => {
+                const renewalDate = new Date(sub.renewalDate);
+                const today = new Date();
+                const daysUntilRenewal = Math.ceil((renewalDate - today) / (1000 * 60 * 60 * 24));
+                const nextMonth = new Date(renewalDate);
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                
+                const statusClass = daysUntilRenewal < 15 ? 'due' : '';
+                const statusText = daysUntilRenewal < 15 && daysUntilRenewal > 0 ? `Due in ${daysUntilRenewal} days` : 'Active';
+                
+                return `
+                    <div class="subscription-card">
+                        <div class="subscription-icon" style="background: ${sub.color};">${sub.icon}</div>
+                        <div class="subscription-info">
+                            <div class="subscription-name">${sub.name}</div>
+                            <div class="subscription-details">Renewed on ${renewalDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • Next: ${nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                            <span class="subscription-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="subscription-amount">₹${sub.amount}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update goals
+        function updateGoals() {
+            const container = document.getElementById('goals-container');
+            container.innerHTML = goals.map(goal => {
+                const percentage = Math.round((goal.current / goal.target) * 100);
+                return `
+                    <div class="goal-card">
+                        <div class="goal-header">
+                            <div class="goal-title">${goal.icon} ${goal.name}</div>
+                            <div class="goal-amount">₹${goal.current.toLocaleString()}/₹${goal.target.toLocaleString()}</div>
+                        </div>
+                        <div class="goal-progress">${percentage}% complete</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Add new expense
+        function addExpense() {
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const description = document.getElementById('expense-description').value;
+            const dateInput = document.getElementById('expense-date').value;
+            
+            if (!amount || !description || !selectedCategory) {
+                alert('Please fill all fields and select a category!');
+                return;
+            }
+            
+            const icons = { 
+                Food: '🍕', Education: '📚', Transport: '🚌', Entertainment: '🎬',
+                Rent: '🏠', Health: '💊', Shopping: '👕', Other: '📱'
+            };
+            
+            const newExpense = {
+                id: expenses.length + 1,
+                title: description,
+                category: selectedCategory,
+                icon: icons[selectedCategory],
+                amount: amount,
+                date: dateInput ? new Date(dateInput) : new Date(),
+                type: 'expense'
+            };
+            
+            expenses.push(newExpense);
+            
+            // Reset form
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-description').value = '';
+            document.getElementById('expense-date').value = '';
+            document.querySelectorAll('#expense-categories .category-btn').forEach(b => b.classList.remove('active'));
+            selectedCategory = '';
+            
+            updateDashboard();
+            alert('Expense added successfully!');
+            showScreen('home');
+        }
+
+        // Add new subscription
+        function addSubscription() {
+            const name = document.getElementById('sub-name').value;
+            const amount = parseFloat(document.getElementById('sub-amount').value);
+            const icon = document.getElementById('sub-icon').value || '📱';
+            const renewalDate = document.getElementById('sub-date').value;
+            const color = document.getElementById('sub-color').value;
+
+            if (!name || !amount || !renewalDate) {
+                alert('Please fill all required fields!');
+                return;
+            }
+
+            subscriptions.push({ name, icon, amount, renewalDate, color });
+            
+            // Reset form
+            document.getElementById('sub-name').value = '';
+            document.getElementById('sub-amount').value = '';
+            document.getElementById('sub-icon').value = '';
+            document.getElementById('sub-date').value = '';
+            
+            updateSubscriptions();
+            alert('Subscription added successfully!');
+            showScreen('subscriptions');
+        }
+
+        // Add new goal
+        function addGoal() {
+            const name = document.getElementById('goal-name').value;
+            const icon = document.getElementById('goal-icon').value || '🎯';
+            const target = parseFloat(document.getElementById('goal-target').value);
+            const current = parseFloat(document.getElementById('goal-current').value) || 0;
+
+            if (!name || !target) {
+                alert('Please fill all required fields!');
+                return;
+            }
+
+            goals.push({ name, icon, target, current });
+            
+            // Reset form
+            document.getElementById('goal-name').value = '';
+            document.getElementById('goal-icon').value = '';
+            document.getElementById('goal-target').value = '';
+            document.getElementById('goal-current').value = '0';
+            
+            updateGoals();
+            alert('Goal created successfully!');
+            showScreen('budget');
+        }
+
+        // Show screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Category selection
+        document.querySelectorAll('#expense-categories .category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#expense-categories .category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                selectedCategory = this.dataset.category;
+            });
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                showScreen(this.dataset.screen);
+            });
+        });
+
+        // Initialize
+        updateDashboard();
+        updateSubscriptions();
+        updateGoals();
+    </script>
+</body>
+</html>
